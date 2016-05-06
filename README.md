@@ -296,6 +296,15 @@ qs.stringify({ a: ['b', 'c', 'd'], e: 'f' }, { filter: ['a', 0, 2] });
 // 'a[0]=b&a[2]=d'
 ```
 
+Also you can use the `exclude` option to restrict which keys will be excluded in the stringified output.
+
+```javascript
+qs.stringify({ a: 'b', c: 'd' }, { exclude: ['c'] });
+// 'a=b'
+qs.stringify({ a: 'b', c: { d: 'e', f: 'g' } }, { exclude: ['c.d'], allowDots: true });
+// 'a=b&c.f=g'
+```
+
 ### Handling of `null` values
 
 By default, `null` values are treated like empty strings:

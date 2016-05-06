@@ -261,4 +261,40 @@ test('stringify()', function (t) {
         st.equal(qs.stringify({ a: 'a', z: { zj: {zjb: 'zjb', zja: 'zja'}, zi: {zib: 'zib', zia: 'zia'} }, b: 'b' }, { sort: null, encode: false }), 'a=a&z[zj][zjb]=zjb&z[zj][zja]=zja&z[zi][zib]=zib&z[zi][zia]=zia&b=b');
         st.end();
     });
+
+    t.test('can exclude the keys', function (st) {
+        st.equal(qs.stringify({ a: 'a' }, { exclude: ['b'] }), 'a=a');
+        st.equal(qs.stringify({ a: 'a', b: 'b' }, { exclude: ['b'] }), 'a=a');
+        st.equal(qs.stringify({ a: { b: 'ab', c: 'ac' } }, { exclude: ['a[b]'] }), 'a%5Bc%5D=ac');
+        st.end();
+    });
+
+    t.test('can exclude the keys with dots notation', function (st) {
+        st.equal(qs.stringify({ a: { b: 'ab', c: 'ac' } }, { allowDots: true, exclude: ['a.b'] }), 'a.c=ac');
+        st.end();
+    });
+
+    t.test('can exclude the keys with array', function (st) {
+        st.equal(qs.stringify({ a: ['a', 'b', 'c'], d: 'd' }, { exclude: ['a'] }), 'd=d');
+        st.equal(qs.stringify({ a: ['a', 'b', 'c'], d: 'd' }, { exclude: ['a[0]', 'a[2]'] }), 'a%5B1%5D=b&d=d');
+        st.end();
+    });
+
+    t.test('cannot exclude the keys with repeat or brackets array', function (st) {
+        st.equal(qs.stringify({ a: ['a', 'b', 'c'], d: 'd' }, { exclude: ['a[0]', 'a[2]'], arrayFormat: 'repeat' }), 'a=a&a=b&a=c&d=d');
+        st.equal(qs.stringify({ a: ['a', 'b', 'c'], d: 'd' }, { exclude: ['a[0]', 'a[2]'], arrayFormat: 'brackets' }), 'a%5B%5D=a&a%5B%5D=b&a%5B%5D=c&d=d');
+        st.end();
+    });
+
+    t.test('can exclude the keys from mixin object', function (st) {
+        st.equal(qs.stringify({ a: { b: ['ab', 'ac'] } }, { exclude: ['a[b][0]'] }), 'a%5Bb%5D%5B1%5D=ac');
+        st.equal(qs.stringify({ a: { b: ['ab', 'ac'] } }, { allowDots: true, exclude: ['a.b[0]'] }), 'a.b%5B1%5D=ac');
+        st.end();
+    });
+
+    t.test('can exclude the keys at depth 3 or more too', function (st) {
+        st.equal(qs.stringify({ a: 'a', z: { zj: { zjb: 'zjb', zja: 'zja' }, zi: { zib: 'zib', zia: 'zia' } }, b: 'b' }, { exclude: ['z[zj][zjb]', 'z[zi][zia]', 'b'] }), 'a=a&z%5Bzj%5D%5Bzja%5D=zja&z%5Bzi%5D%5Bzib%5D=zib');
+        st.equal(qs.stringify({ a: 'a', z: { zj: { zjb: { zjbe: { zjbes: 'zjbesd' } } } } }, { exclude: ['z[zj][zjb][zjbe][zjbes]'] }), 'a=a');
+        st.end();
+    });
 });
